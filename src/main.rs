@@ -1,2 +1,3 @@
-fn main() {
-}
+mod vector;
+
+fn main() {}
