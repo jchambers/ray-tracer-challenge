@@ -271,7 +271,10 @@ mod test {
 
     #[test]
     fn test_vector_dot() {
-        assert_f64_near!(20.0, Vector::new(1.0, 2.0, 3.0).dot(&Vector::new(2.0, 3.0, 4.0)))
+        assert_f64_near!(
+            20.0,
+            Vector::new(1.0, 2.0, 3.0).dot(&Vector::new(2.0, 3.0, 4.0))
+        )
     }
 
     #[test]
@@ -279,14 +282,8 @@ mod test {
         let a = Vector::new(1.0, 2.0, 3.0);
         let b = Vector::new(2.0, 3.0, 4.0);
 
-        assert_vectors_eq(
-            &Vector::new(-1.0, 2.0, -1.0),
-            &a.cross(&b)
-        );
+        assert_vectors_eq(&Vector::new(-1.0, 2.0, -1.0), &a.cross(&b));
 
-        assert_vectors_eq(
-            &Vector::new(1.0, -2.0, 1.0),
-            &b.cross(&a)
-        );
+        assert_vectors_eq(&Vector::new(1.0, -2.0, 1.0), &b.cross(&a));
     }
 }

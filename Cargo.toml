@@ -7,3 +7,4 @@ edition = "2024"
 
 [dev-dependencies]
 assert_float_eq = "1.1.4"
+indoc = "2.0.6"

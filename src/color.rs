@@ -1,14 +1,25 @@
 use std::ops::{Add, Mul, Sub};
 
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color {
-    components: [f64; 3]
+    components: [f64; 3],
 }
 
 impl Color {
     pub fn new(r: f64, g: f64, b: f64) -> Self {
         Color {
-            components: [r, g, b]
+            components: [r, g, b],
         }
+    }
+
+    pub fn components(&self) -> &[f64] {
+        &self.components
+    }
+}
+
+impl Default for Color {
+    fn default() -> Self {
+        Color::new(0.0, 0.0, 0.0)
     }
 }
 
@@ -62,8 +73,8 @@ impl Mul<&Color> for Color {
 
 #[cfg(test)]
 mod test {
-    use assert_float_eq::assert_f64_near;
     use crate::color::Color;
+    use assert_float_eq::assert_f64_near;
 
     fn assert_colors_eq(a: &Color, b: &Color) {
         assert_f64_near!(a.components[0], b.components[0]);
