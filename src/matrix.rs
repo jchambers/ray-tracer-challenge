@@ -1,6 +1,9 @@
 use crate::vector::{Point, Vector};
 use std::ops::{Index, Mul};
 
+#[cfg(test)]
+use assert_float_eq::assert_float_absolute_eq;
+
 pub struct Matrix<const N: usize> {
     elements: [[f64; N]; N],
 }
@@ -30,6 +33,15 @@ impl<const N: usize> Matrix<N> {
         }
 
         transposed
+    }
+
+    #[cfg(test)]
+    pub fn assert_approx_eq(&self, other: &Matrix<N>, epsilon: f64) {
+        for m in 0..N {
+            for n in 0..N {
+                assert_float_absolute_eq!(self.elements[m][n], other.elements[m][n], epsilon);
+            }
+        }
     }
 }
 
@@ -196,15 +208,7 @@ impl Mul<&Vector> for Matrix<4> {
 mod test {
     use crate::matrix::Matrix;
     use crate::vector::Point;
-    use assert_float_eq::{assert_f64_near, assert_float_absolute_eq};
-
-    fn assert_matrices_eq<const N: usize>(a: &Matrix<N>, b: &Matrix<N>) {
-        for m in 0..N {
-            for n in 0..N {
-                assert_float_absolute_eq!(a.elements[m][n], b.elements[m][n], 1e-15);
-            }
-        }
-    }
+    use assert_float_eq::assert_f64_near;
 
     #[test]
     fn test_index() {
@@ -236,34 +240,28 @@ mod test {
             [1.0, 2.0, 7.0, 8.0],
         ]);
 
-        assert_matrices_eq(
-            &Matrix::new([
-                [20.0, 22.0, 50.0, 48.0],
-                [44.0, 54.0, 114.0, 108.0],
-                [40.0, 58.0, 110.0, 102.0],
-                [16.0, 26.0, 46.0, 42.0],
-            ]),
-            &(a * &b),
-        );
+        Matrix::new([
+            [20.0, 22.0, 50.0, 48.0],
+            [44.0, 54.0, 114.0, 108.0],
+            [40.0, 58.0, 110.0, 102.0],
+            [16.0, 26.0, 46.0, 42.0],
+        ]).assert_approx_eq(&(a * &b), 1e-16)
     }
 
     #[test]
     fn test_transpose() {
-        assert_matrices_eq(
-            &Matrix::new([
-                [0.0, 9.0, 1.0, 0.0],
-                [9.0, 8.0, 8.0, 0.0],
-                [3.0, 0.0, 5.0, 5.0],
-                [0.0, 8.0, 3.0, 8.0],
-            ]),
-            &Matrix::new([
-                [0.0, 9.0, 3.0, 0.0],
-                [9.0, 8.0, 0.0, 8.0],
-                [1.0, 8.0, 5.0, 3.0],
-                [0.0, 0.0, 5.0, 8.0],
-            ])
-            .transpose(),
-        )
+        Matrix::new([
+            [0.0, 9.0, 1.0, 0.0],
+            [9.0, 8.0, 8.0, 0.0],
+            [3.0, 0.0, 5.0, 5.0],
+            [0.0, 8.0, 3.0, 8.0],
+        ]).assert_approx_eq(&Matrix::new([
+            [0.0, 9.0, 3.0, 0.0],
+            [9.0, 8.0, 0.0, 8.0],
+            [1.0, 8.0, 5.0, 3.0],
+            [0.0, 0.0, 5.0, 8.0],
+        ])
+            .transpose(), 0.0);
     }
 
     #[test]
@@ -291,7 +289,7 @@ mod test {
             [4.0, 8.0, 16.0, 32.0],
         ]);
 
-        assert_matrices_eq(&original, &(&original * &Matrix::<4>::identity()))
+        original.assert_approx_eq(&(&original * &Matrix::<4>::identity()), 1e-16);
     }
 
     #[test]
@@ -312,16 +310,17 @@ mod test {
 
     #[test]
     fn test_submatrix_4() {
-        assert_matrices_eq(
-            &Matrix::new([[-6.0, 1.0, 6.0], [-8.0, 8.0, 6.0], [-7.0, -1.0, 1.0]]),
-            &Matrix::new([
-                [-6.0, 1.0, 1.0, 6.0],
-                [-8.0, 5.0, 8.0, 6.0],
-                [-1.0, 0.0, 8.0, 2.0],
-                [-7.0, 1.0, -1.0, 1.0],
-            ])
-            .submatrix(2, 1),
-        )
+        Matrix::new([
+            [-6.0, 1.0, 6.0],
+            [-8.0, 8.0, 6.0],
+            [-7.0, -1.0, 1.0]]
+        ).assert_approx_eq(&Matrix::new([
+            [-6.0, 1.0, 1.0, 6.0],
+            [-8.0, 5.0, 8.0, 6.0],
+            [-1.0, 0.0, 8.0, 2.0],
+            [-7.0, 1.0, -1.0, 1.0],
+        ])
+            .submatrix(2, 1), 0.0);
     }
 
     #[test]
@@ -370,9 +369,7 @@ mod test {
         assert_f64_near!(105.0 / 532.0, inverse.elements[2][3]);
         assert_f64_near!(128.0, original.cofactor(2, 0));
 
-        assert_matrices_eq(
-            &Matrix::<4>::identity(),
-            &(&original * &original.inverse().unwrap()),
-        );
+        Matrix::<4>::identity()
+            .assert_approx_eq(&(&original * &original.inverse().unwrap()), 1e-15);
     }
 }

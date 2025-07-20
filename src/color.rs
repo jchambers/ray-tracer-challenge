@@ -1,5 +1,8 @@
 use std::ops::{Add, Mul, Sub};
 
+#[cfg(test)]
+use assert_float_eq::assert_f64_near;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color {
     components: [f64; 3],
@@ -14,6 +17,13 @@ impl Color {
 
     pub fn components(&self) -> &[f64] {
         &self.components
+    }
+
+    #[cfg(test)]
+    pub fn assert_approx_eq(&self, other: &Color) {
+        assert_f64_near!(self.components[0], other.components[0]);
+        assert_f64_near!(self.components[1], other.components[1]);
+        assert_f64_near!(self.components[2], other.components[2]);
     }
 }
 
@@ -74,43 +84,28 @@ impl Mul<&Color> for Color {
 #[cfg(test)]
 mod test {
     use crate::color::Color;
-    use assert_float_eq::assert_f64_near;
-
-    fn assert_colors_eq(a: &Color, b: &Color) {
-        assert_f64_near!(a.components[0], b.components[0]);
-        assert_f64_near!(a.components[1], b.components[1]);
-        assert_f64_near!(a.components[2], b.components[2]);
-    }
 
     #[test]
     fn test_color_add() {
-        assert_colors_eq(
-            &Color::new(1.6, 0.7, 1.0),
-            &(Color::new(0.9, 0.6, 0.75) + &Color::new(0.7, 0.1, 0.25)),
-        )
+        Color::new(1.6, 0.7, 1.0)
+            .assert_approx_eq(&(Color::new(0.9, 0.6, 0.75) + &Color::new(0.7, 0.1, 0.25)));
     }
 
     #[test]
     fn test_color_sub() {
-        assert_colors_eq(
-            &Color::new(0.2, 0.5, 0.5),
-            &(Color::new(0.9, 0.6, 0.75) - &Color::new(0.7, 0.1, 0.25)),
-        )
+        Color::new(0.2, 0.5, 0.5)
+            .assert_approx_eq(&(Color::new(0.9, 0.6, 0.75) - &Color::new(0.7, 0.1, 0.25)))
     }
 
     #[test]
     fn test_color_mul_scalar() {
-        assert_colors_eq(
-            &Color::new(0.4, 0.6, 0.8),
-            &(Color::new(0.2, 0.3, 0.4) * 2.0),
-        )
+        Color::new(0.4, 0.6, 0.8)
+            .assert_approx_eq(&(Color::new(0.2, 0.3, 0.4) * 2.0));
     }
 
     #[test]
     fn test_color_mul_color() {
-        assert_colors_eq(
-            &Color::new(0.9, 0.2, 0.04),
-            &(Color::new(1.0, 0.2, 0.4) * &Color::new(0.9, 1.0, 0.1)),
-        )
+        Color::new(0.9, 0.2, 0.04)
+            .assert_approx_eq(&(Color::new(1.0, 0.2, 0.4) * &Color::new(0.9, 1.0, 0.1)));
     }
 }
