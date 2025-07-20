@@ -10,6 +10,17 @@ impl Point {
             components: [x, y, z, 1.0],
         }
     }
+
+    pub fn components(&self) -> [f64; 4] {
+        self.components
+    }
+}
+
+impl From<[f64; 4]> for Point {
+    fn from(components: [f64; 4]) -> Self {
+        // TODO What if the last component isn't 1.0?
+        Point { components }
+    }
 }
 
 impl Add<&Vector> for Point {
@@ -59,6 +70,10 @@ impl Vector {
         }
     }
 
+    pub fn components(&self) -> [f64; 4] {
+        self.components
+    }
+
     pub fn magnitude(&self) -> f64 {
         ((self.components[0] * self.components[0])
             + (self.components[1] * self.components[1])
@@ -83,6 +98,13 @@ impl Vector {
             (self.components[2] * rhs.components[0]) - (self.components[0] * rhs.components[2]),
             (self.components[0] * rhs.components[1]) - (self.components[1] * rhs.components[0]),
         )
+    }
+}
+
+impl From<[f64; 4]> for Vector {
+    fn from(components: [f64; 4]) -> Self {
+        // TODO What if the last component isn't 0.0?
+        Vector { components }
     }
 }
 
