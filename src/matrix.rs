@@ -34,7 +34,27 @@ impl<const N: usize> Matrix<N> {
 }
 
 impl Matrix<4> {
-    pub fn determinant(&self) -> f64 {
+    // TODO More reasonable error type
+    pub fn inverse(&self) -> Result<Matrix<4>, ()> {
+        let determinant = self.determinant();
+
+        if determinant == 0.0 {
+            // Matrix is not invertible
+            return Err(());
+        }
+
+        let mut inverse = Matrix::new([[0.0; 4]; 4]);
+
+        for row in 0..4 {
+            for col in 0..4 {
+                inverse.elements[col][row] = self.cofactor(row, col) / determinant
+            }
+        }
+
+        Ok(inverse)
+    }
+
+    fn determinant(&self) -> f64 {
         (0..4)
             .map(|i| self.elements[0][i] * self.cofactor(0, i))
             .sum()
@@ -43,7 +63,7 @@ impl Matrix<4> {
     fn cofactor(&self, row: usize, col: usize) -> f64 {
         let minor = self.submatrix(row, col).determinant();
 
-        if row + col % 2 == 0 { minor } else { -minor }
+        if (row + col) % 2 == 0 { minor } else { -minor }
     }
 
     fn submatrix(&self, removed_row: usize, removed_col: usize) -> Matrix<3> {
@@ -86,7 +106,7 @@ impl Matrix<3> {
         let minor = (self.elements[rows[0]][cols[0]] * self.elements[rows[1]][cols[1]])
             - (self.elements[rows[0]][cols[1]] * self.elements[rows[1]][cols[0]]);
 
-        if row + col % 2 == 0 { minor } else { -minor }
+        if (row + col) % 2 == 0 { minor } else { -minor }
     }
 
     fn remaining_indices(n: usize) -> [usize; 2] {
@@ -176,12 +196,12 @@ impl Mul<&Vector> for Matrix<4> {
 mod test {
     use crate::matrix::Matrix;
     use crate::vector::Point;
-    use assert_float_eq::assert_f64_near;
+    use assert_float_eq::{assert_f64_near, assert_float_absolute_eq};
 
     fn assert_matrices_eq<const N: usize>(a: &Matrix<N>, b: &Matrix<N>) {
         for m in 0..N {
             for n in 0..N {
-                assert_f64_near!(a.elements[m][n], b.elements[m][n])
+                assert_float_absolute_eq!(a.elements[m][n], b.elements[m][n], 1e-15);
             }
         }
     }
@@ -306,15 +326,53 @@ mod test {
 
     #[test]
     fn test_determinant_4() {
-        assert_f64_near!(
-            -4071.0,
+        let matrix = Matrix::new([
+            [-2.0, -8.0, 3.0, 5.0],
+            [-3.0, 1.0, 7.0, 3.0],
+            [1.0, 2.0, -9.0, 6.0],
+            [-6.0, 7.0, 7.0, -9.0],
+        ]);
+
+        assert_f64_near!(690.0, matrix.cofactor(0, 0));
+        assert_f64_near!(447.0, matrix.cofactor(0, 1));
+        assert_f64_near!(210.0, matrix.cofactor(0, 2));
+        assert_f64_near!(51.0, matrix.cofactor(0, 3));
+
+        assert_f64_near!(-4071.0, matrix.determinant());
+    }
+
+    #[test]
+    fn test_inverse_4() {
+        assert!(
             Matrix::new([
-                [-2.0, -8.0, 3.0, 5.0],
-                [-3.0, 1.0, 7.0, 3.0],
-                [1.0, 2.0, -9.0, 6.0],
-                [-6.0, 7.0, 7.0, -9.0],
+                [-4.0, 2.0, -2.0, -3.0],
+                [9.0, 6.0, 2.0, 6.0],
+                [0.0, -5.0, 1.0, -5.0],
+                [0.0, 0.0, 0.0, 0.0],
             ])
-            .determinant()
-        )
+            .inverse()
+            .is_err()
+        );
+
+        let original = Matrix::new([
+            [-5.0, 2.0, 6.0, -8.0],
+            [1.0, -5.0, 1.0, 8.0],
+            [7.0, 7.0, -6.0, -7.0],
+            [1.0, -3.0, 7.0, 4.0],
+        ]);
+
+        let inverse = original.inverse().unwrap();
+
+        assert_f64_near!(532.0, original.determinant());
+        assert_f64_near!(-160.0, original.cofactor(2, 3));
+        assert_f64_near!(-160.0 / 532.0, inverse.elements[3][2]);
+        assert_f64_near!(105.0, original.cofactor(3, 2));
+        assert_f64_near!(105.0 / 532.0, inverse.elements[2][3]);
+        assert_f64_near!(128.0, original.cofactor(2, 0));
+
+        assert_matrices_eq(
+            &Matrix::<4>::identity(),
+            &(&original * &original.inverse().unwrap()),
+        );
     }
 }
