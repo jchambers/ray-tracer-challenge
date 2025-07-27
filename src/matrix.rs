@@ -1,5 +1,5 @@
 use crate::vector::{Point, Vector};
-use std::ops::{Index, Mul};
+use std::ops::{Index, Mul, MulAssign};
 
 #[cfg(test)]
 use assert_float_eq::assert_float_absolute_eq;
@@ -139,6 +139,14 @@ impl<const N: usize> Index<(usize, usize)> for Matrix<N> {
     }
 }
 
+impl<const N: usize> Mul<Matrix<N>> for Matrix<N> {
+    type Output = Matrix<N>;
+
+    fn mul(self, rhs: Matrix<N>) -> Self::Output {
+        &self * &rhs
+    }
+}
+
 impl<const N: usize> Mul<&Matrix<N>> for &Matrix<N> {
     type Output = Matrix<N>;
 
@@ -157,6 +165,14 @@ impl<const N: usize> Mul<&Matrix<N>> for &Matrix<N> {
         }
 
         product
+    }
+}
+
+impl Mul<&Point> for Matrix<4> {
+    type Output = Point;
+
+    fn mul(self, rhs: &Point) -> Self::Output {
+        &self * rhs
     }
 }
 

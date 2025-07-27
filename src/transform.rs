@@ -1,73 +1,94 @@
 use crate::matrix::Matrix;
 
-pub fn translate(x: f64, y: f64, z: f64) -> Matrix<4> {
-    Matrix::new([
-        [1.0, 0.0, 0.0, x],
-        [0.0, 1.0, 0.0, y],
-        [0.0, 0.0, 1.0, z],
-        [0.0, 0.0, 0.0, 1.0]
-    ])
+pub enum Transformation {
+    Translate(f64, f64, f64),
+    Scale(f64, f64, f64),
+    RotateX(f64),
+    RotateY(f64),
+    RotateZ(f64),
+    Shear(f64, f64, f64, f64, f64, f64),
 }
 
-pub fn scale(x: f64, y: f64, z: f64) -> Matrix<4> {
-    Matrix::new([
-        [x, 0.0, 0.0, 0.0],
-        [0.0, y, 0.0, 0.0],
-        [0.0, 0.0, z, 0.0],
-        [0.0, 0.0, 0.0, 1.0]
-    ])
+impl Into<Matrix<4>> for &Transformation {
+
+    fn into(self) -> Matrix<4> {
+        match self {
+            Transformation::Translate(x, y, z) => Matrix::new([
+                [1.0, 0.0, 0.0, *x],
+                [0.0, 1.0, 0.0, *y],
+                [0.0, 0.0, 1.0, *z],
+                [0.0, 0.0, 0.0, 1.0]
+            ]),
+
+            Transformation::Scale(x, y, z) => Matrix::new([
+                [*x, 0.0, 0.0, 0.0],
+                [0.0, *y, 0.0, 0.0],
+                [0.0, 0.0, *z, 0.0],
+                [0.0, 0.0, 0.0, 1.0]
+            ]),
+
+            Transformation::RotateX(radians) => {
+                let (sin, cos) = radians.sin_cos();
+
+                Matrix::new([
+                    [1.0, 0.0, 0.0, 0.0],
+                    [0.0, cos, -sin, 0.0],
+                    [0.0, sin, cos, 0.0],
+                    [0.0, 0.0, 0.0, 1.0],
+                ])
+            }
+
+            Transformation::RotateY(radians) => {
+                let (sin, cos) = radians.sin_cos();
+
+                Matrix::new([
+                    [cos, 0.0, sin, 0.0],
+                    [0.0, 1.0, 0.0, 0.0],
+                    [-sin, 0.0, cos, 0.0],
+                    [0.0, 0.0, 0.0, 1.0],
+                ])
+            }
+
+            Transformation::RotateZ(radians) => {
+                let (sin, cos) = radians.sin_cos();
+
+                Matrix::new([
+                    [cos, -sin, 0.0, 0.0],
+                    [sin, cos, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [0.0, 0.0, 0.0, 1.0],
+                ])
+            }
+
+            Transformation::Shear(x_y, x_z, y_x, y_z, z_x, z_y) => Matrix::new([
+                [1.0, *x_y, *x_z, 0.0],
+                [*y_x, 1.0, *y_z, 0.0],
+                [*z_x, *z_y, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ])
+        }
+    }
 }
 
-pub fn rotate_x(radians: f64) -> Matrix<4> {
-    let (sin, cos) = radians.sin_cos();
+pub fn transform(transformations: &[Transformation]) -> Matrix<4> {
+    let mut transformation_matrix = Matrix::<4>::identity();
 
-    Matrix::new([
-        [1.0, 0.0, 0.0, 0.0],
-        [0.0, cos, -sin, 0.0],
-        [0.0, sin, cos, 0.0],
-        [0.0, 0.0, 0.0, 1.0],
-    ])
-}
+    for transformation in transformations.iter().rev() {
+        transformation_matrix = transformation_matrix * Into::<Matrix<4>>::into(transformation);
+    }
 
-pub fn rotate_y(radians: f64) -> Matrix<4> {
-    let (sin, cos) = radians.sin_cos();
-
-    Matrix::new([
-        [cos, 0.0, sin, 0.0],
-        [0.0, 1.0, 0.0, 0.0],
-        [-sin, 0.0, cos, 0.0],
-        [0.0, 0.0, 0.0, 1.0],
-    ])
-}
-
-pub fn rotate_z(radians: f64) -> Matrix<4> {
-    let (sin, cos) = radians.sin_cos();
-
-    Matrix::new([
-        [cos, -sin, 0.0, 0.0],
-        [sin, cos, 0.0, 0.0],
-        [0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 1.0],
-    ])
-}
-
-pub fn shear(x_y: f64, x_z: f64, y_x: f64, y_z: f64, z_x: f64, z_y: f64) -> Matrix<4> {
-    Matrix::new([
-        [1.0, x_y, x_z, 0.0],
-        [y_x, 1.0, y_z, 0.0],
-        [z_x, z_y, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 1.0],
-    ])
+    transformation_matrix
 }
 
 #[cfg(test)]
 mod test {
-    use crate::transform::{rotate_x, rotate_y, rotate_z, scale, shear, translate};
+    use crate::matrix::Matrix;
+    use crate::transform::{transform, Transformation};
     use crate::vector::{Point, Vector};
 
     #[test]
     fn test_translate() {
-        let translation = translate(5.0, -3.0, 2.0);
+        let translation = transform(&[Transformation::Translate(5.0, -3.0, 2.0)]);
 
         Point::new(2.0, 1.0, 7.0)
             .assert_approx_eq(&(&translation * &Point::new(-3.0, 4.0, 5.0)));
@@ -78,7 +99,7 @@ mod test {
 
     #[test]
     fn test_scale() {
-        let scale = scale(2.0, 3.0, 4.0);
+        let scale = transform(&[Transformation::Scale(2.0, 3.0, 4.0)]);
 
         Point::new(-8.0, 18.0, 32.0)
             .assert_approx_eq(&(&scale * &Point::new(-4.0, 6.0, 8.0)));
@@ -92,10 +113,10 @@ mod test {
         let point = Point::new(0.0, 1.0, 0.0);
 
         Point::new(0.0, 2.0f64.sqrt() / 2.0, 2.0f64.sqrt() / 2.0)
-            .assert_approx_eq_epsilon(&(&rotate_x(std::f64::consts::PI / 4.0) * &point), 1e-6);
+            .assert_approx_eq_epsilon(&(&transform(&[Transformation::RotateX(std::f64::consts::PI / 4.0)]) * &point), 1e-6);
 
         Point::new(0.0, 0.0, 1.0)
-            .assert_approx_eq_epsilon(&(&rotate_x(std::f64::consts::PI / 2.0) * &point), 1e-6);
+            .assert_approx_eq_epsilon(&(&transform(&[Transformation::RotateX(std::f64::consts::PI / 2.0)]) * &point), 1e-6);
     }
 
     #[test]
@@ -103,10 +124,10 @@ mod test {
         let point = Point::new(0.0, 0.0, 1.0);
 
         Point::new(2.0f64.sqrt() / 2.0, 0.0, 2.0f64.sqrt() / 2.0)
-            .assert_approx_eq_epsilon(&(&rotate_y(std::f64::consts::PI / 4.0) * &point), 1e-6);
+            .assert_approx_eq_epsilon(&(&transform(&[Transformation::RotateY(std::f64::consts::PI / 4.0)]) * &point), 1e-6);
 
         Point::new(1.0, 0.0, 0.0)
-            .assert_approx_eq_epsilon(&(&rotate_y(std::f64::consts::PI / 2.0) * &point), 1e-6);
+            .assert_approx_eq_epsilon(&(&transform(&[Transformation::RotateY(std::f64::consts::PI / 2.0)]) * &point), 1e-6);
     }
 
     #[test]
@@ -114,10 +135,10 @@ mod test {
         let point = Point::new(0.0, 1.0, 0.0);
 
         Point::new(-2.0f64.sqrt() / 2.0, 2.0f64.sqrt() / 2.0, 0.0)
-            .assert_approx_eq_epsilon(&(&rotate_z(std::f64::consts::PI / 4.0) * &point), 1e-6);
+            .assert_approx_eq_epsilon(&(&transform(&[Transformation::RotateZ(std::f64::consts::PI / 4.0)]) * &point), 1e-6);
 
         Point::new(-1.0, 0.0, 0.0)
-            .assert_approx_eq_epsilon(&(&rotate_z(std::f64::consts::PI / 2.0) * &point), 1e-6);
+            .assert_approx_eq_epsilon(&(&transform(&[Transformation::RotateZ(std::f64::consts::PI / 2.0)]) * &point), 1e-6);
     }
 
     #[test]
@@ -125,6 +146,32 @@ mod test {
         let point = Point::new(2.0, 3.0, 4.0);
 
         Point::new(6.0, 3.0, 4.0)
-            .assert_approx_eq(&(&shear(0.0, 1.0, 0.0, 0.0, 0.0, 0.0) * &point))
+            .assert_approx_eq(&(&transform(&[Transformation::Shear(0.0, 1.0, 0.0, 0.0, 0.0, 0.0)]) * &point));
+
+        Point::new(2.0, 5.0, 4.0)
+            .assert_approx_eq(&(&transform(&[Transformation::Shear(0.0, 0.0, 1.0, 0.0, 0.0, 0.0)]) * &point));
+
+        Point::new(2.0, 7.0, 4.0)
+            .assert_approx_eq(&(&transform(&[Transformation::Shear(0.0, 0.0, 0.0, 1.0, 0.0, 0.0)]) * &point));
+
+        Point::new(2.0, 3.0, 6.0)
+            .assert_approx_eq(&(&transform(&[Transformation::Shear(0.0, 0.0, 0.0, 0.0, 1.0, 0.0)]) * &point));
+    }
+
+    #[test]
+    fn test_chain_transform() {
+        let point = Point::new(1.0, 0.0, 1.0);
+
+        let rotation = Transformation::RotateX(std::f64::consts::PI / 2.0);
+        let scale = Transformation::Scale(5.0, 5.0, 5.0);
+        let translation = Transformation::Translate(10.0, 5.0, 7.0);
+
+        let sequential = Into::<Matrix<4>>::into(&rotation) * &point;
+        let sequential = Into::<Matrix<4>>::into(&scale) * &sequential;
+        let sequential = Into::<Matrix<4>>::into(&translation) * &sequential;
+
+        let combined = transform(&[rotation, scale, translation]) * &point;
+
+        sequential.assert_approx_eq(&combined);
     }
 }
