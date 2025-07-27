@@ -139,14 +139,6 @@ impl<const N: usize> Index<(usize, usize)> for Matrix<N> {
     }
 }
 
-impl<const N: usize> Mul<&Matrix<N>> for Matrix<N> {
-    type Output = Self;
-
-    fn mul(self, rhs: &Matrix<N>) -> Self::Output {
-        &self * rhs
-    }
-}
-
 impl<const N: usize> Mul<&Matrix<N>> for &Matrix<N> {
     type Output = Matrix<N>;
 
@@ -168,7 +160,7 @@ impl<const N: usize> Mul<&Matrix<N>> for &Matrix<N> {
     }
 }
 
-impl Mul<&Point> for Matrix<4> {
+impl Mul<&Point> for &Matrix<4> {
     type Output = Point;
 
     fn mul(self, rhs: &Point) -> Self::Output {
@@ -186,7 +178,7 @@ impl Mul<&Point> for Matrix<4> {
     }
 }
 
-impl Mul<&Vector> for Matrix<4> {
+impl Mul<&Vector> for &Matrix<4> {
     type Output = Vector;
 
     fn mul(self, rhs: &Vector) -> Self::Output {
@@ -245,7 +237,7 @@ mod test {
             [44.0, 54.0, 114.0, 108.0],
             [40.0, 58.0, 110.0, 102.0],
             [16.0, 26.0, 46.0, 42.0],
-        ]).assert_approx_eq(&(a * &b), 1e-16)
+        ]).assert_approx_eq(&(&a * &b), 1e-16)
     }
 
     #[test]
@@ -266,7 +258,7 @@ mod test {
 
     #[test]
     fn test_mul_point() {
-        let point = Matrix::new([
+        let point = &Matrix::new([
             [1.0, 2.0, 3.0, 4.0],
             [2.0, 4.0, 4.0, 2.0],
             [8.0, 6.0, 4.0, 1.0],

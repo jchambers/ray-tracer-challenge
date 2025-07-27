@@ -2,6 +2,8 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[cfg(test)]
 use assert_float_eq::assert_f64_near;
+#[cfg(test)]
+use assert_float_eq::assert_float_absolute_eq;
 
 pub struct Point {
     components: [f64; 4],
@@ -24,11 +26,19 @@ impl Point {
         assert_f64_near!(self.components[1], other.components[1]);
         assert_f64_near!(self.components[2], other.components[2]);
     }
+
+    #[cfg(test)]
+    pub fn assert_approx_eq_epsilon(&self, other: &Point, epsilon: f64) {
+        assert_float_absolute_eq!(self.components[0], other.components[0], epsilon);
+        assert_float_absolute_eq!(self.components[1], other.components[1], epsilon);
+        assert_float_absolute_eq!(self.components[2], other.components[2], epsilon);
+    }
 }
 
 impl From<[f64; 4]> for Point {
     fn from(components: [f64; 4]) -> Self {
-        // TODO What if the last component isn't 1.0?
+        debug_assert!(components[3] == 1.0);
+
         Point { components }
     }
 }
@@ -121,7 +131,8 @@ impl Vector {
 
 impl From<[f64; 4]> for Vector {
     fn from(components: [f64; 4]) -> Self {
-        // TODO What if the last component isn't 0.0?
+        debug_assert!(components[3] == 0.0);
+
         Vector { components }
     }
 }
@@ -225,7 +236,7 @@ mod test {
 
     #[test]
     fn test_vector_sub_vector() {
-        &Vector::new(-5.0, -3.0, -1.0)
+        Vector::new(-5.0, -3.0, -1.0)
             .assert_appeox_eq(&(Vector::new(1.0, 2.0, 3.0) - &Vector::new(6.0, 5.0, 4.0)));
     }
 
