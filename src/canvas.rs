@@ -11,7 +11,7 @@ impl Canvas {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             width,
-            pixels: iter::repeat_with(|| Color::default())
+            pixels: iter::repeat_with(Color::default)
                 .take(width * height)
                 .collect(),
         }
@@ -123,7 +123,7 @@ mod test {
               0   0   0   0   0   0   0 128   0   0   0   0   0   0   0
               0   0   0   0   0   0   0   0   0   0   0   0   0   0 255
         "},
-            format!("{}", canvas)
+            format!("{canvas}")
         );
     }
 }

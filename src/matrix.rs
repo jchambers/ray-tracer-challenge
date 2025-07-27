@@ -99,7 +99,7 @@ impl Matrix<4> {
             1 => [0, 2, 3],
             2 => [0, 1, 3],
             3 => [0, 1, 2],
-            _ => panic!("Index out of bounds: {}", n),
+            _ => panic!("Index out of bounds: {n}"),
         }
     }
 }
@@ -126,7 +126,7 @@ impl Matrix<3> {
             0 => [1, 2],
             1 => [0, 2],
             2 => [0, 1],
-            _ => panic!("Index out of bounds: {}", n),
+            _ => panic!("Index out of bounds: {n}"),
         }
     }
 }
