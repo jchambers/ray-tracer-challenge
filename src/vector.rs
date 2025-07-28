@@ -16,6 +16,10 @@ impl Point {
         }
     }
 
+    pub fn coordinates(&self) -> (f64, f64, f64) {
+        (self.components[0], self.components[1], self.components[2])
+    }
+
     pub fn components(&self) -> [f64; 4] {
         self.components
     }
