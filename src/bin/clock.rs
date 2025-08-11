@@ -1,13 +1,8 @@
-use crate::canvas::Canvas;
-use crate::color::Color;
-use crate::transform::Transformation;
-use crate::vector::Point;
-
-mod canvas;
-mod color;
-mod matrix;
-mod vector;
-mod transform;
+use ray_tracer_challenge::canvas::Canvas;
+use ray_tracer_challenge::color::Color;
+use ray_tracer_challenge::transform;
+use ray_tracer_challenge::transform::Transformation;
+use ray_tracer_challenge::vector::Point;
 
 fn main() {
     let mut canvas = Canvas::new(128, 128);
