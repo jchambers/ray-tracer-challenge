@@ -99,8 +99,7 @@ mod test {
 
     #[test]
     fn test_color_mul_scalar() {
-        Color::new(0.4, 0.6, 0.8)
-            .assert_approx_eq(&(Color::new(0.2, 0.3, 0.4) * 2.0));
+        Color::new(0.4, 0.6, 0.8).assert_approx_eq(&(Color::new(0.2, 0.3, 0.4) * 2.0));
     }
 
     #[test]

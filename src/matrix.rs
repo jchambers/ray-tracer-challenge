@@ -1,5 +1,6 @@
 use crate::vector::{Point, Vector};
-use std::ops::{Index, Mul, MulAssign};
+use std::fmt::{Debug, Display, Formatter};
+use std::ops::{Index, Mul};
 
 #[cfg(test)]
 use assert_float_eq::assert_float_absolute_eq;
@@ -46,13 +47,12 @@ impl<const N: usize> Matrix<N> {
 }
 
 impl Matrix<4> {
-    // TODO More reasonable error type
-    pub fn inverse(&self) -> Result<Matrix<4>, ()> {
+    pub fn inverse(&self) -> Result<Matrix<4>, SingularMatrix> {
         let determinant = self.determinant();
 
         if determinant == 0.0 {
             // Matrix is not invertible
-            return Err(());
+            return Err(SingularMatrix);
         }
 
         let mut inverse = Matrix::new([[0.0; 4]; 4]);
@@ -84,9 +84,9 @@ impl Matrix<4> {
         let rows = Self::remaining_indices(removed_row);
         let cols = Self::remaining_indices(removed_col);
 
-        for row in 0..3 {
-            for col in 0..3 {
-                submatrix.elements[row][col] = self.elements[rows[row]][cols[col]];
+        for (dest_row, &source_row) in rows.iter().enumerate() {
+            for (dest_col, &source_col) in cols.iter().enumerate() {
+                submatrix.elements[dest_row][dest_col] = self.elements[source_row][source_col];
             }
         }
 
@@ -168,6 +168,23 @@ impl<const N: usize> Mul<&Matrix<N>> for &Matrix<N> {
     }
 }
 
+impl<const N: usize> Mul<[f64; N]> for &Matrix<N> {
+    type Output = [f64; N];
+
+    fn mul(self, rhs: [f64; N]) -> Self::Output {
+        let mut components = [0.0; N];
+
+        self.elements
+            .iter()
+            .enumerate()
+            .for_each(|(row, elements)| {
+                components[row] = elements.iter().zip(rhs.iter()).map(|(a, b)| a * b).sum()
+            });
+
+        components
+    }
+}
+
 impl Mul<&Point> for Matrix<4> {
     type Output = Point;
 
@@ -180,17 +197,7 @@ impl Mul<&Point> for &Matrix<4> {
     type Output = Point;
 
     fn mul(self, rhs: &Point) -> Self::Output {
-        let mut components = [0.0; 4];
-
-        for m in 0..4 {
-            components[m] = self.elements[m]
-                .iter()
-                .zip(rhs.components().iter())
-                .map(|(a, b)| a * b)
-                .sum();
-        }
-
-        Point::from(components)
+        Point::from(self * rhs.components())
     }
 }
 
@@ -198,19 +205,20 @@ impl Mul<&Vector> for &Matrix<4> {
     type Output = Vector;
 
     fn mul(self, rhs: &Vector) -> Self::Output {
-        let mut components = [0.0; 4];
-
-        for m in 0..4 {
-            components[m] = self.elements[m]
-                .iter()
-                .zip(rhs.components().iter())
-                .map(|(a, b)| a * b)
-                .sum();
-        }
-
-        Vector::from(components)
+        Vector::from(self * rhs.components())
     }
 }
+
+#[derive(Debug)]
+pub struct SingularMatrix;
+
+impl Display for SingularMatrix {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Matrix is singular")
+    }
+}
+
+impl std::error::Error for SingularMatrix {}
 
 #[cfg(test)]
 mod test {
@@ -253,7 +261,8 @@ mod test {
             [44.0, 54.0, 114.0, 108.0],
             [40.0, 58.0, 110.0, 102.0],
             [16.0, 26.0, 46.0, 42.0],
-        ]).assert_approx_eq(&(&a * &b), 1e-16)
+        ])
+        .assert_approx_eq(&(&a * &b), 1e-16)
     }
 
     #[test]
@@ -263,13 +272,17 @@ mod test {
             [9.0, 8.0, 8.0, 0.0],
             [3.0, 0.0, 5.0, 5.0],
             [0.0, 8.0, 3.0, 8.0],
-        ]).assert_approx_eq(&Matrix::new([
-            [0.0, 9.0, 3.0, 0.0],
-            [9.0, 8.0, 0.0, 8.0],
-            [1.0, 8.0, 5.0, 3.0],
-            [0.0, 0.0, 5.0, 8.0],
         ])
-            .transpose(), 0.0);
+        .assert_approx_eq(
+            &Matrix::new([
+                [0.0, 9.0, 3.0, 0.0],
+                [9.0, 8.0, 0.0, 8.0],
+                [1.0, 8.0, 5.0, 3.0],
+                [0.0, 0.0, 5.0, 8.0],
+            ])
+            .transpose(),
+            0.0,
+        );
     }
 
     #[test]
@@ -283,9 +296,10 @@ mod test {
 
         let expected_components = [18.0, 24.0, 33.0, 1.0];
 
-        for i in 0..4 {
-            assert_f64_near!(expected_components[i], point.components()[i]);
-        }
+        expected_components
+            .iter()
+            .zip(point.components().iter())
+            .for_each(|(&expected, &actual)| assert_f64_near!(expected, actual));
     }
 
     #[test]
@@ -318,17 +332,16 @@ mod test {
 
     #[test]
     fn test_submatrix_4() {
-        Matrix::new([
-            [-6.0, 1.0, 6.0],
-            [-8.0, 8.0, 6.0],
-            [-7.0, -1.0, 1.0]]
-        ).assert_approx_eq(&Matrix::new([
-            [-6.0, 1.0, 1.0, 6.0],
-            [-8.0, 5.0, 8.0, 6.0],
-            [-1.0, 0.0, 8.0, 2.0],
-            [-7.0, 1.0, -1.0, 1.0],
-        ])
-            .submatrix(2, 1), 0.0);
+        Matrix::new([[-6.0, 1.0, 6.0], [-8.0, 8.0, 6.0], [-7.0, -1.0, 1.0]]).assert_approx_eq(
+            &Matrix::new([
+                [-6.0, 1.0, 1.0, 6.0],
+                [-8.0, 5.0, 8.0, 6.0],
+                [-1.0, 0.0, 8.0, 2.0],
+                [-7.0, 1.0, -1.0, 1.0],
+            ])
+            .submatrix(2, 1),
+            0.0,
+        );
     }
 
     #[test]

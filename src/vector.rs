@@ -129,7 +129,6 @@ impl Vector {
         assert_f64_near!(self.components[0], other.components[0]);
         assert_f64_near!(self.components[1], other.components[1]);
         assert_f64_near!(self.components[2], other.components[2]);
-
     }
 }
 
@@ -246,26 +245,21 @@ mod test {
 
     #[test]
     fn test_vector_neg() {
-        Vector::new(1.0, -2.0, 3.0)
-            .assert_appeox_eq(&(-Vector::new(-1.0, 2.0, -3.0)));
+        Vector::new(1.0, -2.0, 3.0).assert_appeox_eq(&(-Vector::new(-1.0, 2.0, -3.0)));
     }
 
     #[test]
     fn test_vector_mul() {
-        Vector::new(3.5, -7.0, 10.5)
-            .assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) * 3.5));
+        Vector::new(3.5, -7.0, 10.5).assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) * 3.5));
 
-        Vector::new(0.5, -1.0, 1.5)
-            .assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) * 0.5));
+        Vector::new(0.5, -1.0, 1.5).assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) * 0.5));
     }
 
     #[test]
     fn test_vector_div() {
-        Vector::new(2.0, -4.0, 6.0)
-            .assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) / 0.5));
+        Vector::new(2.0, -4.0, 6.0).assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) / 0.5));
 
-        Vector::new(0.5, -1.0, 1.5)
-            .assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) / 2.0));
+        Vector::new(0.5, -1.0, 1.5).assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) / 2.0));
     }
 
     #[test]
@@ -278,14 +272,12 @@ mod test {
 
     #[test]
     fn test_vector_normalize() {
-        Vector::new(1.0, 0.0, 0.0)
-            .assert_appeox_eq(&Vector::new(4.0, 0.0, 0.0).normalize());
+        Vector::new(1.0, 0.0, 0.0).assert_appeox_eq(&Vector::new(4.0, 0.0, 0.0).normalize());
 
         let normalized = Vector::new(1.0, -2.0, 3.0).normalize();
         let sqrt14 = 14.0f64.sqrt();
 
-        Vector::new(1.0 / sqrt14, -2.0 / sqrt14, 3.0 / sqrt14)
-            .assert_appeox_eq(&normalized);
+        Vector::new(1.0 / sqrt14, -2.0 / sqrt14, 3.0 / sqrt14).assert_appeox_eq(&normalized);
 
         assert_f64_near!(1.0, normalized.magnitude());
     }

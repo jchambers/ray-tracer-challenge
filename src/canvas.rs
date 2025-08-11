@@ -47,10 +47,6 @@ impl Canvas {
 
         (self.width * y) + x
     }
-
-    fn component_to_ppm(component: f64) -> String {
-        format!("{}", (component.clamp(0.0, 1.0) * 255.0) as u32)
-    }
 }
 
 impl Display for Canvas {
