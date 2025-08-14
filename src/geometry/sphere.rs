@@ -1,3 +1,4 @@
+use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::{IntersectRay, Ray};
 use crate::vector::Point;
 
@@ -10,7 +11,7 @@ impl Sphere {
 }
 
 impl IntersectRay for Sphere {
-    fn intersect(&self, ray: &Ray) -> Vec<f64> {
+    fn intersect(&self, ray: &Ray) -> Vec<Intersection> {
         let sphere_to_ray = ray.origin() - &Point::new(0.0, 0.0, 0.0);
 
         let a = ray.direction().dot(ray.direction());
@@ -24,15 +25,15 @@ impl IntersectRay for Sphere {
         } else {
             let sqrt_discriminant = discriminant.sqrt();
 
-            let intersections = (
+            let distances = (
                 (-b - sqrt_discriminant) / (2.0 * a),
                 (-b + sqrt_discriminant) / (2.0 * a),
             );
 
             // Return intersections in ascending order of distance along ray's path
             vec![
-                intersections.0.min(intersections.1),
-                intersections.0.max(intersections.1),
+                Intersection::new(distances.0.min(distances.1), self),
+                Intersection::new(distances.0.max(distances.1), self),
             ]
         }
     }
@@ -48,29 +49,35 @@ mod test {
     #[test]
     fn test_intersect_ray() {
         {
-            let intersections = Sphere::new().intersect(&Ray::new(
+            let sphere = Sphere::new();
+
+            let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 0.0, -5.0),
                 Vector::new(0.0, 0.0, 1.0),
             ));
 
             assert_eq!(2, intersections.len());
-            assert_f64_near!(4.0, intersections[0]);
-            assert_f64_near!(6.0, intersections[1]);
+            assert_f64_near!(4.0, intersections[0].distance());
+            assert_f64_near!(6.0, intersections[1].distance());
         }
 
         {
-            let intersections = Sphere::new().intersect(&Ray::new(
+            let sphere = Sphere::new();
+
+            let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 1.0, -5.0),
                 Vector::new(0.0, 0.0, 1.0),
             ));
 
             assert_eq!(2, intersections.len());
-            assert_f64_near!(5.0, intersections[0]);
-            assert_f64_near!(5.0, intersections[1]);
+            assert_f64_near!(5.0, intersections[0].distance());
+            assert_f64_near!(5.0, intersections[1].distance());
         }
 
         {
-            let intersections = Sphere::new().intersect(&Ray::new(
+            let sphere = Sphere::new();
+
+            let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 2.0, -5.0),
                 Vector::new(0.0, 0.0, 1.0),
             ));
@@ -79,14 +86,16 @@ mod test {
         }
 
         {
-            let intersections = Sphere::new().intersect(&Ray::new(
+            let sphere = Sphere::new();
+
+            let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 0.0, 0.0),
                 Vector::new(0.0, 0.0, 1.0),
             ));
 
             assert_eq!(2, intersections.len());
-            assert_f64_near!(-1.0, intersections[0]);
-            assert_f64_near!(1.0, intersections[1]);
+            assert_f64_near!(-1.0, intersections[0].distance());
+            assert_f64_near!(1.0, intersections[1].distance());
         }
     }
 }

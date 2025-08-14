@@ -1,3 +1,4 @@
+use crate::geometry::intersection::Intersection;
 use crate::vector::{Point, Vector};
 
 pub struct Ray {
@@ -20,5 +21,5 @@ impl Ray {
 }
 
 pub trait IntersectRay {
-    fn intersect(&self, ray: &Ray) -> Vec<f64>;
+    fn intersect(&self, ray: &Ray) -> Vec<Intersection>;
 }
