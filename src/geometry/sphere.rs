@@ -1,17 +1,29 @@
 use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::{IntersectRay, Ray};
+use crate::matrix::Matrix;
 use crate::vector::Point;
 
-pub struct Sphere {}
+pub struct Sphere {
+    transformation: Matrix<4>,
+}
 
 impl Sphere {
     pub fn new() -> Self {
-        Sphere {}
+        Sphere {
+            transformation: Matrix::<4>::identity(),
+        }
+    }
+
+    pub fn with_transformation(transformation: Matrix<4>) -> Self {
+        Sphere { transformation }
     }
 }
 
 impl IntersectRay for Sphere {
     fn intersect(&self, ray: &Ray) -> Vec<Intersection> {
+        // TODO Can we tighten things up at a type level to guarantee that the transformation matrix
+        //  is always an affine transform and therefore invertible?
+        let ray = self.transformation.inverse().unwrap() * ray;
         let sphere_to_ray = ray.origin() - &Point::new(0.0, 0.0, 0.0);
 
         let a = ray.direction().dot(ray.direction());
@@ -43,6 +55,8 @@ impl IntersectRay for Sphere {
 mod test {
     use crate::geometry::ray::{IntersectRay, Ray};
     use crate::geometry::sphere::Sphere;
+    use crate::transform;
+    use crate::transform::Transformation;
     use crate::vector::{Point, Vector};
     use assert_float_eq::assert_f64_near;
 
@@ -96,6 +110,36 @@ mod test {
             assert_eq!(2, intersections.len());
             assert_f64_near!(-1.0, intersections[0].distance());
             assert_f64_near!(1.0, intersections[1].distance());
+        }
+
+        {
+            let sphere =
+                Sphere::with_transformation(transform::transform(&[Transformation::Scale(
+                    2.0, 2.0, 2.0,
+                )]));
+
+            let intersections = sphere.intersect(&Ray::new(
+                Point::new(0.0, 0.0, -5.0),
+                Vector::new(0.0, 0.0, 1.0),
+            ));
+
+            assert_eq!(2, intersections.len());
+            assert_f64_near!(3.0, intersections[0].distance());
+            assert_f64_near!(7.0, intersections[1].distance());
+        }
+
+        {
+            let sphere =
+                Sphere::with_transformation(transform::transform(&[Transformation::Translate(
+                    5.0, 0.0, 0.0,
+                )]));
+
+            let intersections = sphere.intersect(&Ray::new(
+                Point::new(0.0, 0.0, -5.0),
+                Vector::new(0.0, 0.0, 1.0),
+            ));
+
+            assert!(intersections.is_empty());
         }
     }
 }
