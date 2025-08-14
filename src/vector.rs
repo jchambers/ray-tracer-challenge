@@ -75,6 +75,14 @@ impl Sub<&Point> for Point {
     type Output = Vector;
 
     fn sub(self, rhs: &Point) -> Self::Output {
+        &self - rhs
+    }
+}
+
+impl Sub<&Point> for &Point {
+    type Output = Vector;
+
+    fn sub(self, rhs: &Point) -> Self::Output {
         Vector::new(
             self.components[0] - rhs.components[0],
             self.components[1] - rhs.components[1],
