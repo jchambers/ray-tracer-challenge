@@ -29,7 +29,7 @@ mod test {
 
     #[test]
     fn test_hit() {
-        let sphere = Sphere::new();
+        let sphere = Sphere::default();
 
         {
             let intersections = vec![

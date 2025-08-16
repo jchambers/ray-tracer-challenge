@@ -7,14 +7,16 @@ pub struct Sphere {
     transformation: Matrix<4>,
 }
 
-impl Sphere {
-    pub fn new() -> Self {
+impl Default for Sphere {
+    fn default() -> Self {
         Sphere {
             transformation: Matrix::<4>::identity(),
         }
     }
+}
 
-    pub fn with_transformation(transformation: Matrix<4>) -> Self {
+impl Sphere {
+    pub fn new(transformation: Matrix<4>) -> Self {
         Sphere { transformation }
     }
 }
@@ -63,7 +65,7 @@ mod test {
     #[test]
     fn test_intersect_ray() {
         {
-            let sphere = Sphere::new();
+            let sphere = Sphere::default();
 
             let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 0.0, -5.0),
@@ -76,7 +78,7 @@ mod test {
         }
 
         {
-            let sphere = Sphere::new();
+            let sphere = Sphere::default();
 
             let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 1.0, -5.0),
@@ -89,7 +91,7 @@ mod test {
         }
 
         {
-            let sphere = Sphere::new();
+            let sphere = Sphere::default();
 
             let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 2.0, -5.0),
@@ -100,7 +102,7 @@ mod test {
         }
 
         {
-            let sphere = Sphere::new();
+            let sphere = Sphere::default();
 
             let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 0.0, 0.0),
@@ -113,10 +115,9 @@ mod test {
         }
 
         {
-            let sphere =
-                Sphere::with_transformation(transform::transform(&[Transformation::Scale(
-                    2.0, 2.0, 2.0,
-                )]));
+            let sphere = Sphere::new(transform::transform(&[Transformation::Scale(
+                2.0, 2.0, 2.0,
+            )]));
 
             let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 0.0, -5.0),
@@ -129,10 +130,9 @@ mod test {
         }
 
         {
-            let sphere =
-                Sphere::with_transformation(transform::transform(&[Transformation::Translate(
-                    5.0, 0.0, 0.0,
-                )]));
+            let sphere = Sphere::new(transform::transform(&[Transformation::Translate(
+                5.0, 0.0, 0.0,
+            )]));
 
             let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 0.0, -5.0),

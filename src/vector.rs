@@ -5,6 +5,7 @@ use assert_float_eq::assert_f64_near;
 #[cfg(test)]
 use assert_float_eq::assert_float_absolute_eq;
 
+#[derive(Copy, Clone)]
 pub struct Point {
     components: [f64; 4],
 }
@@ -91,6 +92,7 @@ impl Sub<&Point> for &Point {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct Vector {
     components: [f64; 4],
 }

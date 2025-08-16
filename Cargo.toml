@@ -6,6 +6,9 @@ edition = "2024"
 [[bin]]
 name = "clock"
 
+[[bin]]
+name = "sphere_projection"
+
 [dependencies]
 
 [dev-dependencies]

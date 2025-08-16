@@ -1,3 +1,3 @@
-mod intersection;
-mod ray;
-mod sphere;
+pub mod intersection;
+pub mod ray;
+pub mod sphere;
