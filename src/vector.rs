@@ -5,6 +5,10 @@ use assert_float_eq::assert_f64_near;
 #[cfg(test)]
 use assert_float_eq::assert_float_absolute_eq;
 
+pub const ORIGIN: Point = Point {
+    components: [0.0, 0.0, 0.0, 1.0],
+};
+
 #[derive(Copy, Clone)]
 pub struct Point {
     components: [f64; 4],
@@ -135,7 +139,7 @@ impl Vector {
     }
 
     #[cfg(test)]
-    pub fn assert_appeox_eq(&self, other: &Vector) {
+    pub fn assert_approx_eq(&self, other: &Vector) {
         assert_f64_near!(self.components[0], other.components[0]);
         assert_f64_near!(self.components[1], other.components[1]);
         assert_f64_near!(self.components[2], other.components[2]);
@@ -238,38 +242,38 @@ mod test {
     #[test]
     fn test_point_sub_point() {
         Vector::new(-5.0, -3.0, -1.0)
-            .assert_appeox_eq(&(Point::new(1.0, 2.0, 3.0) - &Point::new(6.0, 5.0, 4.0)));
+            .assert_approx_eq(&(Point::new(1.0, 2.0, 3.0) - &Point::new(6.0, 5.0, 4.0)));
     }
 
     #[test]
     fn test_vector_add_vector() {
         Vector::new(5.0, 7.0, 9.0)
-            .assert_appeox_eq(&(Vector::new(1.0, 2.0, 3.0) + &Vector::new(4.0, 5.0, 6.0)));
+            .assert_approx_eq(&(Vector::new(1.0, 2.0, 3.0) + &Vector::new(4.0, 5.0, 6.0)));
     }
 
     #[test]
     fn test_vector_sub_vector() {
         Vector::new(-5.0, -3.0, -1.0)
-            .assert_appeox_eq(&(Vector::new(1.0, 2.0, 3.0) - &Vector::new(6.0, 5.0, 4.0)));
+            .assert_approx_eq(&(Vector::new(1.0, 2.0, 3.0) - &Vector::new(6.0, 5.0, 4.0)));
     }
 
     #[test]
     fn test_vector_neg() {
-        Vector::new(1.0, -2.0, 3.0).assert_appeox_eq(&(-Vector::new(-1.0, 2.0, -3.0)));
+        Vector::new(1.0, -2.0, 3.0).assert_approx_eq(&(-Vector::new(-1.0, 2.0, -3.0)));
     }
 
     #[test]
     fn test_vector_mul() {
-        Vector::new(3.5, -7.0, 10.5).assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) * 3.5));
+        Vector::new(3.5, -7.0, 10.5).assert_approx_eq(&(Vector::new(1.0, -2.0, 3.0) * 3.5));
 
-        Vector::new(0.5, -1.0, 1.5).assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) * 0.5));
+        Vector::new(0.5, -1.0, 1.5).assert_approx_eq(&(Vector::new(1.0, -2.0, 3.0) * 0.5));
     }
 
     #[test]
     fn test_vector_div() {
-        Vector::new(2.0, -4.0, 6.0).assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) / 0.5));
+        Vector::new(2.0, -4.0, 6.0).assert_approx_eq(&(Vector::new(1.0, -2.0, 3.0) / 0.5));
 
-        Vector::new(0.5, -1.0, 1.5).assert_appeox_eq(&(Vector::new(1.0, -2.0, 3.0) / 2.0));
+        Vector::new(0.5, -1.0, 1.5).assert_approx_eq(&(Vector::new(1.0, -2.0, 3.0) / 2.0));
     }
 
     #[test]
@@ -282,12 +286,12 @@ mod test {
 
     #[test]
     fn test_vector_normalize() {
-        Vector::new(1.0, 0.0, 0.0).assert_appeox_eq(&Vector::new(4.0, 0.0, 0.0).normalize());
+        Vector::new(1.0, 0.0, 0.0).assert_approx_eq(&Vector::new(4.0, 0.0, 0.0).normalize());
 
         let normalized = Vector::new(1.0, -2.0, 3.0).normalize();
         let sqrt14 = 14.0f64.sqrt();
 
-        Vector::new(1.0 / sqrt14, -2.0 / sqrt14, 3.0 / sqrt14).assert_appeox_eq(&normalized);
+        Vector::new(1.0 / sqrt14, -2.0 / sqrt14, 3.0 / sqrt14).assert_approx_eq(&normalized);
 
         assert_f64_near!(1.0, normalized.magnitude());
     }
@@ -305,7 +309,7 @@ mod test {
         let a = Vector::new(1.0, 2.0, 3.0);
         let b = Vector::new(2.0, 3.0, 4.0);
 
-        Vector::new(-1.0, 2.0, -1.0).assert_appeox_eq(&a.cross(&b));
-        Vector::new(1.0, -2.0, 1.0).assert_appeox_eq(&b.cross(&a));
+        Vector::new(-1.0, 2.0, -1.0).assert_approx_eq(&a.cross(&b));
+        Vector::new(1.0, -2.0, 1.0).assert_approx_eq(&b.cross(&a));
     }
 }

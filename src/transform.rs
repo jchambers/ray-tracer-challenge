@@ -92,7 +92,7 @@ mod test {
         Point::new(2.0, 1.0, 7.0).assert_approx_eq(&(&translation * &Point::new(-3.0, 4.0, 5.0)));
 
         Vector::new(-3.0, 4.0, 5.0)
-            .assert_appeox_eq(&(&translation * &Vector::new(-3.0, 4.0, 5.0)));
+            .assert_approx_eq(&(&translation * &Vector::new(-3.0, 4.0, 5.0)));
     }
 
     #[test]
@@ -101,7 +101,7 @@ mod test {
 
         Point::new(-8.0, 18.0, 32.0).assert_approx_eq(&(&scale * &Point::new(-4.0, 6.0, 8.0)));
 
-        Vector::new(-8.0, 18.0, 32.0).assert_appeox_eq(&(&scale * &Vector::new(-4.0, 6.0, 8.0)));
+        Vector::new(-8.0, 18.0, 32.0).assert_approx_eq(&(&scale * &Vector::new(-4.0, 6.0, 8.0)));
     }
 
     #[test]

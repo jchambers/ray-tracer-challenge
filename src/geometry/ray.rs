@@ -60,7 +60,7 @@ mod test {
                 transformation * &Ray::new(Point::new(1.0, 2.0, 3.0), Vector::new(0.0, 1.0, 0.0));
 
             ray.origin.assert_approx_eq(&Point::new(4.0, 6.0, 8.0));
-            ray.direction.assert_appeox_eq(&Vector::new(0.0, 1.0, 0.0));
+            ray.direction.assert_approx_eq(&Vector::new(0.0, 1.0, 0.0));
         }
 
         {
@@ -69,7 +69,7 @@ mod test {
                 transformation * &Ray::new(Point::new(1.0, 2.0, 3.0), Vector::new(0.0, 1.0, 0.0));
 
             ray.origin.assert_approx_eq(&Point::new(2.0, 6.0, 12.0));
-            ray.direction.assert_appeox_eq(&Vector::new(0.0, 3.0, 0.0));
+            ray.direction.assert_approx_eq(&Vector::new(0.0, 3.0, 0.0));
         }
     }
 }

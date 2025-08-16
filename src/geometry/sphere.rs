@@ -1,7 +1,7 @@
 use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::{IntersectRay, Ray};
 use crate::matrix::Matrix;
-use crate::vector::Point;
+use crate::vector::{ORIGIN, Point, Vector};
 
 pub struct Sphere {
     transformation: Matrix<4>,
@@ -18,6 +18,19 @@ impl Default for Sphere {
 impl Sphere {
     pub fn new(transformation: Matrix<4>) -> Self {
         Sphere { transformation }
+    }
+
+    pub fn normal_at(&self, world_point: &Point) -> Vector {
+        let transform_inverse = self.transformation.inverse().unwrap();
+
+        let object_point = &transform_inverse * world_point;
+        let object_normal = object_point - &ORIGIN;
+
+        let mut world_normal_components =
+            &transform_inverse.transpose() * object_normal.components();
+        world_normal_components[3] = 0.0;
+
+        Vector::from(world_normal_components).normalize()
     }
 }
 
@@ -60,7 +73,7 @@ mod test {
     use crate::transform;
     use crate::transform::Transformation;
     use crate::vector::{Point, Vector};
-    use assert_float_eq::assert_f64_near;
+    use assert_float_eq::{assert_f64_near, assert_float_absolute_eq};
 
     #[test]
     fn test_intersect_ray() {
@@ -140,6 +153,54 @@ mod test {
             ));
 
             assert!(intersections.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_normal_at() {
+        let unit_sphere = Sphere::default();
+
+        Vector::new(1.0, 0.0, 0.0)
+            .assert_approx_eq(&unit_sphere.normal_at(&Point::new(1.0, 0.0, 0.0)));
+
+        Vector::new(0.0, 1.0, 0.0)
+            .assert_approx_eq(&unit_sphere.normal_at(&Point::new(0.0, 1.0, 0.0)));
+
+        Vector::new(0.0, 0.0, 1.0)
+            .assert_approx_eq(&unit_sphere.normal_at(&Point::new(0.0, 0.0, 1.0)));
+
+        let sqrt_3_3 = 3.0f64.sqrt() / 3.0;
+
+        Vector::new(sqrt_3_3, sqrt_3_3, sqrt_3_3)
+            .assert_approx_eq(&unit_sphere.normal_at(&Point::new(sqrt_3_3, sqrt_3_3, sqrt_3_3)));
+    }
+
+    #[test]
+    fn test_normal_at_transformed() {
+        let sqrt_2_2 = 2.0f64.sqrt() / 2.0;
+
+        {
+            let translated_sphere =
+                Sphere::new(transform::transform(&[Transformation::Translate(
+                    0.0, 1.0, 0.0,
+                )]));
+
+            Vector::new(0.0, sqrt_2_2, -sqrt_2_2).assert_approx_eq(
+                &translated_sphere.normal_at(&Point::new(0.0, 1.0 + sqrt_2_2, -sqrt_2_2)),
+            );
+        }
+
+        {
+            let translated_sphere = Sphere::new(transform::transform(&[
+                Transformation::RotateZ(std::f64::consts::PI / 5.0),
+                Transformation::Scale(1.0, 0.5, 1.0),
+            ]));
+
+            let normal = translated_sphere.normal_at(&Point::new(0.0, sqrt_2_2, -sqrt_2_2));
+
+            assert_f64_near!(0.0, normal.components()[0]);
+            assert_float_absolute_eq!(0.97014, normal.components()[1], 1e-5);
+            assert_float_absolute_eq!(-0.24254, normal.components()[2], 1e-5);
         }
     }
 }
