@@ -1,5 +1,5 @@
-use std::{fs, io};
 use clap::Parser;
+use png::EncodingError;
 use ray_tracer_challenge::canvas::Canvas;
 use ray_tracer_challenge::color::Color;
 use ray_tracer_challenge::geometry::ray::{IntersectRay, Ray};
@@ -7,6 +7,7 @@ use ray_tracer_challenge::geometry::sphere::Sphere;
 use ray_tracer_challenge::transform;
 use ray_tracer_challenge::transform::Transformation;
 use ray_tracer_challenge::vector::Point;
+use std::fs::File;
 
 const BACKDROP_WIDTH: f64 = 8.0;
 const BACKDROP_HEIGHT: f64 = 8.0;
@@ -24,7 +25,7 @@ struct Args {
     size: usize,
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), EncodingError> {
     let args = Args::parse();
 
     let sphere = Sphere::new(transform::transform(&[Transformation::Translate(
@@ -60,5 +61,5 @@ fn main() -> io::Result<()> {
         }
     }
 
-    fs::write(args.out, format!{"{canvas}"})
+    canvas.write_as_png(File::create(args.out)?, args.size as u32, args.size as u32)
 }
