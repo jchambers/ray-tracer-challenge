@@ -51,7 +51,6 @@ mod test {
     use crate::transform;
     use crate::transform::Transformation;
     use crate::vector::{Point, Vector};
-    use assert_float_eq::assert_f64_near;
 
     #[test]
     fn test_transform() {
