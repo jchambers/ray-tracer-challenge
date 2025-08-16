@@ -1,10 +1,11 @@
 use clap::Parser;
+use png::EncodingError;
 use ray_tracer_challenge::canvas::Canvas;
 use ray_tracer_challenge::color::Color;
 use ray_tracer_challenge::transform;
 use ray_tracer_challenge::transform::Transformation;
 use ray_tracer_challenge::vector::Point;
-use std::{fs, io};
+use std::fs::File;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -16,7 +17,7 @@ struct Args {
     size: usize,
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), EncodingError> {
     let args = Args::parse();
 
     let mut canvas = Canvas::new(args.size, args.size);
@@ -34,6 +35,5 @@ fn main() -> io::Result<()> {
         canvas.set_pixel(x as usize, y as usize, white);
     }
 
-
-    fs::write(args.out, format!{"{canvas}"})
+    canvas.write_as_png(File::create(args.out)?, args.size as u32, args.size as u32)
 }
