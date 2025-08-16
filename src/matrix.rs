@@ -105,6 +105,25 @@ impl Matrix<4> {
 }
 
 impl Matrix<3> {
+    pub fn inverse(&self) -> Result<Matrix<3>, SingularMatrix> {
+        let determinant = self.determinant();
+
+        if determinant == 0.0 {
+            // Matrix is not invertible
+            return Err(SingularMatrix);
+        }
+
+        let mut inverse = Matrix::new([[0.0; 3]; 3]);
+
+        for row in 0..3 {
+            for col in 0..3 {
+                inverse.elements[col][row] = self.cofactor(row, col) / determinant
+            }
+        }
+
+        Ok(inverse)
+    }
+
     pub fn determinant(&self) -> f64 {
         (0..3)
             .map(|i| self.elements[0][i] * self.cofactor(0, i))
@@ -392,5 +411,22 @@ mod test {
 
         Matrix::<4>::identity()
             .assert_approx_eq(&(&original * &original.inverse().unwrap()), 1e-15);
+    }
+
+    #[test]
+    fn test_inverse_3() {
+        let original = Matrix::new([
+            [0.0, -3.0, -2.0],
+            [1.0, -4.0, -2.0],
+            [-3.0, 4.0, 1.0],
+        ]);
+
+        let expected_inverse = Matrix::new([
+            [4.0, -5.0, -2.0],
+            [5.0, -6.0, -2.0],
+            [-8.0, 9.0, 3.0]
+        ]);
+
+        expected_inverse.assert_approx_eq(&original.inverse().unwrap(), 1e-15);
     }
 }
