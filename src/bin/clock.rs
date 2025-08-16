@@ -1,11 +1,25 @@
+use clap::Parser;
 use ray_tracer_challenge::canvas::Canvas;
 use ray_tracer_challenge::color::Color;
 use ray_tracer_challenge::transform;
 use ray_tracer_challenge::transform::Transformation;
 use ray_tracer_challenge::vector::Point;
+use std::{fs, io};
 
-fn main() {
-    let mut canvas = Canvas::new(128, 128);
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    #[arg(short, long)]
+    out: String,
+
+    #[arg(short, long, default_value_t = 128)]
+    size: usize,
+}
+
+fn main() -> io::Result<()> {
+    let args = Args::parse();
+
+    let mut canvas = Canvas::new(args.size, args.size);
     let white = Color::new(1.0, 1.0, 1.0);
 
     for hour in 0..12 {
@@ -20,5 +34,6 @@ fn main() {
         canvas.set_pixel(x as usize, y as usize, white);
     }
 
-    println!("{canvas}");
+
+    fs::write(args.out, format!{"{canvas}"})
 }

@@ -10,6 +10,7 @@ name = "clock"
 name = "sphere_projection"
 
 [dependencies]
+clap = { version = "4.5.45", features = ["derive"] }
 
 [dev-dependencies]
 assert_float_eq = "1.1.4"
