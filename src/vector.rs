@@ -138,11 +138,22 @@ impl Vector {
         )
     }
 
+    pub fn reflect(&self, normal: &Vector) -> Self {
+        self - &(normal * 2.0 * self.dot(normal))
+    }
+
     #[cfg(test)]
     pub fn assert_approx_eq(&self, other: &Vector) {
         assert_f64_near!(self.components[0], other.components[0]);
         assert_f64_near!(self.components[1], other.components[1]);
         assert_f64_near!(self.components[2], other.components[2]);
+    }
+
+    #[cfg(test)]
+    pub fn assert_approx_eq_epsilon(&self, other: &Vector, epsilon: f64) {
+        assert_float_absolute_eq!(self.components[0], other.components[0], epsilon);
+        assert_float_absolute_eq!(self.components[1], other.components[1], epsilon);
+        assert_float_absolute_eq!(self.components[2], other.components[2], epsilon);
     }
 }
 
@@ -170,6 +181,14 @@ impl Sub<&Vector> for Vector {
     type Output = Self;
 
     fn sub(self, rhs: &Vector) -> Self::Output {
+        &self - rhs
+    }
+}
+
+impl Sub<&Vector> for &Vector {
+    type Output = Vector;
+
+    fn sub(self, rhs: &Vector) -> Self::Output {
         Vector::new(
             self.components[0] - rhs.components[0],
             self.components[1] - rhs.components[1],
@@ -180,6 +199,14 @@ impl Sub<&Vector> for Vector {
 
 impl Mul<f64> for Vector {
     type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        &self * rhs
+    }
+}
+
+impl Mul<f64> for &Vector {
+    type Output = Vector;
 
     fn mul(self, rhs: f64) -> Self::Output {
         Vector::new(
@@ -311,5 +338,23 @@ mod test {
 
         Vector::new(-1.0, 2.0, -1.0).assert_approx_eq(&a.cross(&b));
         Vector::new(1.0, -2.0, 1.0).assert_approx_eq(&b.cross(&a));
+    }
+
+    #[test]
+    fn test_vector_reflect() {
+        {
+            let normal = Vector::new(0.0, 1.0, 0.0);
+
+            Vector::new(1.0, 1.0, 0.0)
+                .assert_approx_eq(&Vector::new(1.0, -1.0, 0.0).reflect(&normal));
+        }
+
+        {
+            let sqrt_2_2 = 2.0f64.sqrt() / 2.0;
+            let normal = Vector::new(sqrt_2_2, sqrt_2_2, 0.0);
+
+            Vector::new(1.0, 0.0, 0.0)
+                .assert_approx_eq_epsilon(&Vector::new(0.0, -1.0, 0.0).reflect(&normal), 1e-15);
+        }
     }
 }
