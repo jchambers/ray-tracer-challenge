@@ -20,6 +20,10 @@ impl Ray {
     pub fn direction(&self) -> &Vector {
         &self.direction
     }
+
+    pub fn position(&self, distance: f64) -> Point {
+        self.origin + &(self.direction * distance)
+    }
 }
 
 impl Mul<&Ray> for Matrix<4> {

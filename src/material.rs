@@ -12,6 +12,16 @@ pub struct Material {
 }
 
 impl Material {
+    pub fn new(color: Color, ambient: f64, diffuse: f64, specular: f64, shininess: f64) -> Self {
+        Self {
+            color,
+            ambient,
+            diffuse,
+            specular,
+            shininess,
+        }
+    }
+
     pub fn color(&self) -> &Color {
         &self.color
     }

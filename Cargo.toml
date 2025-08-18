@@ -7,7 +7,7 @@ edition = "2024"
 name = "clock"
 
 [[bin]]
-name = "sphere_projection"
+name = "sphere"
 
 [dependencies]
 clap = { version = "4.5.45", features = ["derive"] }

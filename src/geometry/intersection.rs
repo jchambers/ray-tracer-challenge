@@ -13,6 +13,10 @@ impl<'a> Intersection<'a> {
     pub fn distance(&self) -> f64 {
         self.distance
     }
+
+    pub fn sphere(&self) -> &Sphere {
+        self.sphere
+    }
 }
 
 pub fn hit<'s, 'i>(intersections: &'i [Intersection<'s>]) -> Option<&'i Intersection<'s>> {
