@@ -1,4 +1,4 @@
-use crate::geometry::intersection::Intersection;
+use crate::intersection::Intersection;
 use crate::matrix::Matrix;
 use crate::vector::{Point, Vector};
 use std::ops::Mul;
@@ -51,7 +51,7 @@ pub trait IntersectRay {
 
 #[cfg(test)]
 mod test {
-    use crate::geometry::ray::Ray;
+    use crate::ray::Ray;
     use crate::transform;
     use crate::transform::Transformation;
     use crate::vector::{Point, Vector};

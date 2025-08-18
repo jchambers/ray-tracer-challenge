@@ -28,7 +28,7 @@ pub fn hit<'s, 'i>(intersections: &'i [Intersection<'s>]) -> Option<&'i Intersec
 
 #[cfg(test)]
 mod test {
-    use crate::geometry::intersection::{Intersection, hit};
+    use crate::intersection::{Intersection, hit};
     use crate::shape::sphere::Sphere;
 
     #[test]

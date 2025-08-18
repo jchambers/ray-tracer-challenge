@@ -1,9 +1,9 @@
 pub mod sphere;
 
-use crate::geometry::intersection::Intersection;
-use crate::geometry::ray::Ray;
+use crate::intersection::Intersection;
 use crate::material::Material;
 use crate::matrix::Matrix;
+use crate::ray::Ray;
 use crate::vector::{Point, Vector};
 
 pub trait Shape {
