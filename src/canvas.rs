@@ -1,3 +1,4 @@
+use crate::color;
 use crate::color::Color;
 use png::EncodingError;
 use std::fs::File;
@@ -13,9 +14,7 @@ impl Canvas {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             width,
-            pixels: iter::repeat_with(Color::default)
-                .take(width * height)
-                .collect(),
+            pixels: iter::repeat_n(color::BLACK, width * height).collect(),
         }
     }
 

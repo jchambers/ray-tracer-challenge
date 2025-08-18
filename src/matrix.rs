@@ -415,17 +415,10 @@ mod test {
 
     #[test]
     fn test_inverse_3() {
-        let original = Matrix::new([
-            [0.0, -3.0, -2.0],
-            [1.0, -4.0, -2.0],
-            [-3.0, 4.0, 1.0],
-        ]);
+        let original = Matrix::new([[0.0, -3.0, -2.0], [1.0, -4.0, -2.0], [-3.0, 4.0, 1.0]]);
 
-        let expected_inverse = Matrix::new([
-            [4.0, -5.0, -2.0],
-            [5.0, -6.0, -2.0],
-            [-8.0, 9.0, 3.0]
-        ]);
+        let expected_inverse =
+            Matrix::new([[4.0, -5.0, -2.0], [5.0, -6.0, -2.0], [-8.0, 9.0, 3.0]]);
 
         expected_inverse.assert_approx_eq(&original.inverse().unwrap(), 1e-15);
     }

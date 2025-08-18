@@ -1,7 +1,7 @@
 use clap::Parser;
 use png::EncodingError;
 use ray_tracer_challenge::canvas::Canvas;
-use ray_tracer_challenge::color::Color;
+use ray_tracer_challenge::color::WHITE;
 use ray_tracer_challenge::transform;
 use ray_tracer_challenge::transform::Transformation;
 use ray_tracer_challenge::vector::Point;
@@ -19,9 +19,7 @@ struct Args {
 
 fn main() -> Result<(), EncodingError> {
     let args = Args::parse();
-
     let mut canvas = Canvas::new(args.size, args.size);
-    let white = Color::new(1.0, 1.0, 1.0);
 
     for hour in 0..12 {
         let transformation = transform::transform(&[
@@ -32,7 +30,7 @@ fn main() -> Result<(), EncodingError> {
 
         let (x, y, _) = (transformation * &Point::new(0.0, 1.0, 0.0)).coordinates();
 
-        canvas.set_pixel(x as usize, y as usize, white);
+        canvas.set_pixel(x as usize, y as usize, WHITE);
     }
 
     canvas.write_as_png(File::create(args.out)?, args.size as u32, args.size as u32)

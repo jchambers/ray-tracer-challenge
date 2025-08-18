@@ -1,23 +1,33 @@
 use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::{IntersectRay, Ray};
+use crate::material::Material;
 use crate::matrix::Matrix;
 use crate::vector::{ORIGIN, Point, Vector};
 
 pub struct Sphere {
     transformation: Matrix<4>,
+    material: Material,
 }
 
 impl Default for Sphere {
     fn default() -> Self {
         Sphere {
             transformation: Matrix::<4>::identity(),
+            material: Material::default(),
         }
     }
 }
 
 impl Sphere {
-    pub fn new(transformation: Matrix<4>) -> Self {
-        Sphere { transformation }
+    pub fn new(transformation: Matrix<4>, material: Material) -> Self {
+        Sphere {
+            transformation,
+            material,
+        }
+    }
+
+    pub fn material(&self) -> &Material {
+        &self.material
     }
 
     pub fn normal_at(&self, world_point: &Point) -> Vector {
@@ -70,6 +80,7 @@ impl IntersectRay for Sphere {
 mod test {
     use crate::geometry::ray::{IntersectRay, Ray};
     use crate::geometry::sphere::Sphere;
+    use crate::material::Material;
     use crate::transform;
     use crate::transform::Transformation;
     use crate::vector::{Point, Vector};
@@ -128,9 +139,10 @@ mod test {
         }
 
         {
-            let sphere = Sphere::new(transform::transform(&[Transformation::Scale(
-                2.0, 2.0, 2.0,
-            )]));
+            let sphere = Sphere::new(
+                transform::transform(&[Transformation::Scale(2.0, 2.0, 2.0)]),
+                Material::default(),
+            );
 
             let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 0.0, -5.0),
@@ -143,9 +155,10 @@ mod test {
         }
 
         {
-            let sphere = Sphere::new(transform::transform(&[Transformation::Translate(
-                5.0, 0.0, 0.0,
-            )]));
+            let sphere = Sphere::new(
+                transform::transform(&[Transformation::Translate(5.0, 0.0, 0.0)]),
+                Material::default(),
+            );
 
             let intersections = sphere.intersect(&Ray::new(
                 Point::new(0.0, 0.0, -5.0),
@@ -180,10 +193,10 @@ mod test {
         let sqrt_2_2 = 2.0f64.sqrt() / 2.0;
 
         {
-            let translated_sphere =
-                Sphere::new(transform::transform(&[Transformation::Translate(
-                    0.0, 1.0, 0.0,
-                )]));
+            let translated_sphere = Sphere::new(
+                transform::transform(&[Transformation::Translate(0.0, 1.0, 0.0)]),
+                Material::default(),
+            );
 
             Vector::new(0.0, sqrt_2_2, -sqrt_2_2).assert_approx_eq(
                 &translated_sphere.normal_at(&Point::new(0.0, 1.0 + sqrt_2_2, -sqrt_2_2)),
@@ -191,10 +204,13 @@ mod test {
         }
 
         {
-            let translated_sphere = Sphere::new(transform::transform(&[
-                Transformation::RotateZ(std::f64::consts::PI / 5.0),
-                Transformation::Scale(1.0, 0.5, 1.0),
-            ]));
+            let translated_sphere = Sphere::new(
+                transform::transform(&[
+                    Transformation::RotateZ(std::f64::consts::PI / 5.0),
+                    Transformation::Scale(1.0, 0.5, 1.0),
+                ]),
+                Material::default(),
+            );
 
             let normal = translated_sphere.normal_at(&Point::new(0.0, sqrt_2_2, -sqrt_2_2));
 

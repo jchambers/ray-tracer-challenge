@@ -3,6 +3,17 @@ use std::ops::{Add, Mul, Sub};
 #[cfg(test)]
 use assert_float_eq::assert_f64_near;
 
+#[cfg(test)]
+use assert_float_eq::assert_float_relative_eq;
+
+pub const BLACK: Color = Color {
+    components: [0.0, 0.0, 0.0],
+};
+
+pub const WHITE: Color = Color {
+    components: [1.0, 1.0, 1.0],
+};
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color {
     components: [f64; 3],
@@ -25,18 +36,19 @@ impl Color {
         assert_f64_near!(self.components[1], other.components[1]);
         assert_f64_near!(self.components[2], other.components[2]);
     }
-}
 
-impl Default for Color {
-    fn default() -> Self {
-        Color::new(0.0, 0.0, 0.0)
+    #[cfg(test)]
+    pub fn assert_approx_eq_epsilon(&self, other: &Color, epsilon: f64) {
+        assert_float_relative_eq!(self.components[0], other.components[0], epsilon);
+        assert_float_relative_eq!(self.components[1], other.components[1], epsilon);
+        assert_float_relative_eq!(self.components[2], other.components[2], epsilon);
     }
 }
 
-impl Add<&Color> for Color {
+impl Add<Color> for Color {
     type Output = Self;
 
-    fn add(self, rhs: &Color) -> Self::Output {
+    fn add(self, rhs: Color) -> Self::Output {
         Color::new(
             self.components[0] + rhs.components[0],
             self.components[1] + rhs.components[1],
@@ -45,10 +57,10 @@ impl Add<&Color> for Color {
     }
 }
 
-impl Sub<&Color> for Color {
+impl Sub<Color> for Color {
     type Output = Self;
 
-    fn sub(self, rhs: &Color) -> Self::Output {
+    fn sub(self, rhs: Color) -> Self::Output {
         Color::new(
             self.components[0] - rhs.components[0],
             self.components[1] - rhs.components[1],
@@ -69,10 +81,10 @@ impl Mul<f64> for Color {
     }
 }
 
-impl Mul<&Color> for Color {
+impl Mul<Color> for Color {
     type Output = Self;
 
-    fn mul(self, rhs: &Color) -> Self::Output {
+    fn mul(self, rhs: Color) -> Self::Output {
         Color::new(
             self.components[0] * rhs.components[0],
             self.components[1] * rhs.components[1],
@@ -88,13 +100,13 @@ mod test {
     #[test]
     fn test_color_add() {
         Color::new(1.6, 0.7, 1.0)
-            .assert_approx_eq(&(Color::new(0.9, 0.6, 0.75) + &Color::new(0.7, 0.1, 0.25)));
+            .assert_approx_eq(&(Color::new(0.9, 0.6, 0.75) + Color::new(0.7, 0.1, 0.25)));
     }
 
     #[test]
     fn test_color_sub() {
         Color::new(0.2, 0.5, 0.5)
-            .assert_approx_eq(&(Color::new(0.9, 0.6, 0.75) - &Color::new(0.7, 0.1, 0.25)))
+            .assert_approx_eq(&(Color::new(0.9, 0.6, 0.75) - Color::new(0.7, 0.1, 0.25)))
     }
 
     #[test]
@@ -105,6 +117,6 @@ mod test {
     #[test]
     fn test_color_mul_color() {
         Color::new(0.9, 0.2, 0.04)
-            .assert_approx_eq(&(Color::new(1.0, 0.2, 0.4) * &Color::new(0.9, 1.0, 0.1)));
+            .assert_approx_eq(&(Color::new(1.0, 0.2, 0.4) * Color::new(0.9, 1.0, 0.1)));
     }
 }
