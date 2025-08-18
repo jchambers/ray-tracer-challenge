@@ -1,55 +1,51 @@
 use crate::geometry::intersection::Intersection;
-use crate::geometry::ray::{IntersectRay, Ray};
+use crate::geometry::ray::Ray;
 use crate::material::Material;
 use crate::matrix::Matrix;
+use crate::shape::Shape;
+use crate::transform;
+use crate::transform::Transformation;
 use crate::vector::{ORIGIN, Point, Vector};
 
 pub struct Sphere {
-    transformation: Matrix<4>,
+    inverse_transformation: Matrix<4>,
     material: Material,
 }
 
-impl Default for Sphere {
-    fn default() -> Self {
+impl Sphere {
+    pub fn with_transformations(transformations: &[Transformation], material: Material) -> Self {
         Sphere {
-            transformation: Matrix::<4>::identity(),
-            material: Material::default(),
+            inverse_transformation: transform::transform(transformations).inverse().unwrap(),
+            material,
         }
     }
 }
 
-impl Sphere {
-    pub fn new(transformation: Matrix<4>, material: Material) -> Self {
-        Sphere {
-            transformation,
-            material,
-        }
+impl Shape for Sphere {
+    fn inverse_transformation(&self) -> &Matrix<4> {
+        &self.inverse_transformation
     }
 
-    pub fn material(&self) -> &Material {
+    fn material(&self) -> &Material {
         &self.material
     }
 
-    pub fn normal_at(&self, world_point: &Point) -> Vector {
-        let transform_inverse = self.transformation.inverse().unwrap();
-
-        let object_point = &transform_inverse * world_point;
+    fn normal_at(&self, world_point: &Point) -> Vector {
+        let object_point = &self.inverse_transformation * world_point;
         let object_normal = object_point - &ORIGIN;
 
         let mut world_normal_components =
-            &transform_inverse.transpose() * object_normal.components();
+            &self.inverse_transformation.transpose() * object_normal.components();
+
+        // TODO Possible optimization opportunity: invert a 3x3 matrix instead?
         world_normal_components[3] = 0.0;
 
         Vector::from(world_normal_components).normalize()
     }
-}
 
-impl IntersectRay for Sphere {
-    fn intersect(&self, ray: &Ray) -> Vec<Intersection> {
-        // TODO Can we tighten things up at a type level to guarantee that the transformation matrix
-        //  is always an affine transform and therefore invertible?
-        let ray = self.transformation.inverse().unwrap() * ray;
-        let sphere_to_ray = ray.origin() - &Point::new(0.0, 0.0, 0.0);
+    fn intersect(&self, world_ray: &Ray) -> Vec<Intersection> {
+        let ray = &self.inverse_transformation * world_ray;
+        let sphere_to_ray = ray.origin() - &ORIGIN;
 
         let a = ray.direction().dot(ray.direction());
         let b = 2.0 * ray.direction().dot(&sphere_to_ray);
@@ -76,12 +72,21 @@ impl IntersectRay for Sphere {
     }
 }
 
+impl Default for Sphere {
+    fn default() -> Self {
+        Sphere {
+            inverse_transformation: Matrix::<4>::identity(),
+            material: Material::default(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use crate::geometry::ray::{IntersectRay, Ray};
-    use crate::geometry::sphere::Sphere;
+    use crate::geometry::ray::Ray;
     use crate::material::Material;
-    use crate::transform;
+    use crate::shape::Shape;
+    use crate::shape::sphere::Sphere;
     use crate::transform::Transformation;
     use crate::vector::{Point, Vector};
     use assert_float_eq::{assert_f64_near, assert_float_absolute_eq};
@@ -139,8 +144,8 @@ mod test {
         }
 
         {
-            let sphere = Sphere::new(
-                transform::transform(&[Transformation::Scale(2.0, 2.0, 2.0)]),
+            let sphere = Sphere::with_transformations(
+                &[Transformation::Scale(2.0, 2.0, 2.0)],
                 Material::default(),
             );
 
@@ -155,8 +160,8 @@ mod test {
         }
 
         {
-            let sphere = Sphere::new(
-                transform::transform(&[Transformation::Translate(5.0, 0.0, 0.0)]),
+            let sphere = Sphere::with_transformations(
+                &[Transformation::Translate(5.0, 0.0, 0.0)],
                 Material::default(),
             );
 
@@ -193,8 +198,8 @@ mod test {
         let sqrt_2_2 = 2.0f64.sqrt() / 2.0;
 
         {
-            let translated_sphere = Sphere::new(
-                transform::transform(&[Transformation::Translate(0.0, 1.0, 0.0)]),
+            let translated_sphere = Sphere::with_transformations(
+                &[Transformation::Translate(0.0, 1.0, 0.0)],
                 Material::default(),
             );
 
@@ -204,11 +209,11 @@ mod test {
         }
 
         {
-            let translated_sphere = Sphere::new(
-                transform::transform(&[
+            let translated_sphere = Sphere::with_transformations(
+                &[
                     Transformation::RotateZ(std::f64::consts::PI / 5.0),
                     Transformation::Scale(1.0, 0.5, 1.0),
-                ]),
+                ],
                 Material::default(),
             );
 

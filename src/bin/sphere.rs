@@ -1,15 +1,16 @@
 use clap::Parser;
 use png::EncodingError;
 use ray_tracer_challenge::canvas::Canvas;
+use ray_tracer_challenge::color;
 use ray_tracer_challenge::color::Color;
 use ray_tracer_challenge::geometry::intersection;
-use ray_tracer_challenge::geometry::ray::{IntersectRay, Ray};
-use ray_tracer_challenge::geometry::sphere::Sphere;
+use ray_tracer_challenge::geometry::ray::Ray;
 use ray_tracer_challenge::light::PointLight;
 use ray_tracer_challenge::material::Material;
+use ray_tracer_challenge::shape::Shape;
+use ray_tracer_challenge::shape::sphere::Sphere;
 use ray_tracer_challenge::transform::Transformation;
 use ray_tracer_challenge::vector::Point;
-use ray_tracer_challenge::{color, transform};
 use std::fs::File;
 
 const BACKDROP_WIDTH: f64 = 8.0;
@@ -31,12 +32,12 @@ struct Args {
 fn main() -> Result<(), EncodingError> {
     let args = Args::parse();
 
-    let sphere = Sphere::new(
-        transform::transform(&[Transformation::Translate(
+    let sphere = Sphere::with_transformations(
+        &[Transformation::Translate(
             BACKDROP_WIDTH / 2.0,
             BACKDROP_HEIGHT / 2.0,
             0.0,
-        )]),
+        )],
         Material::new(Color::new(1.0, 0.2, 1.0), 0.1, 0.9, 0.9, 20.0),
     );
 
@@ -61,7 +62,7 @@ fn main() -> Result<(), EncodingError> {
                     &light,
                     &position,
                     &-camera_to_target,
-                    &intersection.sphere().normal_at(&position),
+                    &intersection.shape().normal_at(&position),
                 )
             } else {
                 color::BLACK

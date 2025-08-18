@@ -4,5 +4,6 @@ pub mod geometry;
 pub mod light;
 pub mod material;
 pub mod matrix;
+pub mod shape;
 pub mod transform;
 pub mod vector;

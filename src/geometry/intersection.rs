@@ -1,21 +1,21 @@
-use crate::geometry::sphere::Sphere;
+use crate::shape::Shape;
 
 pub struct Intersection<'a> {
     distance: f64,
-    sphere: &'a Sphere,
+    shape: &'a dyn Shape,
 }
 
 impl<'a> Intersection<'a> {
-    pub fn new(distance: f64, sphere: &'a Sphere) -> Self {
-        Intersection { distance, sphere }
+    pub fn new(distance: f64, shape: &'a dyn Shape) -> Self {
+        Intersection { distance, shape }
     }
 
     pub fn distance(&self) -> f64 {
         self.distance
     }
 
-    pub fn sphere(&self) -> &Sphere {
-        self.sphere
+    pub fn shape(&self) -> &dyn Shape {
+        self.shape
     }
 }
 
@@ -29,16 +29,16 @@ pub fn hit<'s, 'i>(intersections: &'i [Intersection<'s>]) -> Option<&'i Intersec
 #[cfg(test)]
 mod test {
     use crate::geometry::intersection::{Intersection, hit};
-    use crate::geometry::sphere::Sphere;
+    use crate::shape::sphere::Sphere;
 
     #[test]
     fn test_hit() {
-        let sphere = Sphere::default();
+        let shape = Sphere::default();
 
         {
             let intersections = vec![
-                Intersection::new(1.0, &sphere),
-                Intersection::new(2.0, &sphere),
+                Intersection::new(1.0, &shape),
+                Intersection::new(2.0, &shape),
             ];
 
             assert_eq!(1.0, hit(&intersections).unwrap().distance());
@@ -46,8 +46,8 @@ mod test {
 
         {
             let intersections = vec![
-                Intersection::new(-1.0, &sphere),
-                Intersection::new(1.0, &sphere),
+                Intersection::new(-1.0, &shape),
+                Intersection::new(1.0, &shape),
             ];
 
             assert_eq!(1.0, hit(&intersections).unwrap().distance());
@@ -55,8 +55,8 @@ mod test {
 
         {
             let intersections = vec![
-                Intersection::new(-2.0, &sphere),
-                Intersection::new(-1.0, &sphere),
+                Intersection::new(-2.0, &shape),
+                Intersection::new(-1.0, &shape),
             ];
 
             assert!(hit(&intersections).is_none());
@@ -64,10 +64,10 @@ mod test {
 
         {
             let intersections = vec![
-                Intersection::new(5.0, &sphere),
-                Intersection::new(7.0, &sphere),
-                Intersection::new(-3.0, &sphere),
-                Intersection::new(2.0, &sphere),
+                Intersection::new(5.0, &shape),
+                Intersection::new(7.0, &shape),
+                Intersection::new(-3.0, &shape),
+                Intersection::new(2.0, &shape),
             ];
 
             assert_eq!(2.0, hit(&intersections).unwrap().distance());
